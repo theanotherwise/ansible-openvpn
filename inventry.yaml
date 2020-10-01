@@ -1,0 +1,12 @@
+all:
+  vars:
+    ansible_connection: ssh
+    ansible_port: 22
+    ansible_user: terraform
+    ansible_become: true
+    ansible_become_flags: "-H -S -n -i"
+
+vpn:
+  hosts:
+    vpn1.seems.cloud:
+      ansible_host: 104.154.30.241
