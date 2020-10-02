@@ -1,87 +1,91 @@
 ---
-- name: Install openvpn package
-  apt:
-    name: openvpn
-    update_cache: yes
-
-- name: Copy ca.crt to /etc/openvpn/
-  copy:
-    src: ca.crt
-    dest: /etc/openvpn/ca.crt
-    owner: root
-    group: root
-    mode: 0644
-
-- name: Copy ca.key to /etc/openvpn/
-  copy:
-    src: ca.key
-    dest: /etc/openvpn/ca.key
-    owner: root
-    group: root
-    mode: 0400
-
-- name: Copy dh2048.pem to /etc/openvpn/
-  copy:
-    src: dh2048.pem
-    dest: /etc/openvpn/dh2048.pem
-    owner: root
-    group: root
-    mode: 0400
-
-- name: Copy server.crt to /etc/openvpn/
-  copy:
-    src: server.crt
-    dest: /etc/openvpn/server.crt
-    owner: root
-    group: root
-    mode: 0644
-
-- name: Copy server.key to /etc/openvpn/
-  copy:
-    src: server.key
-    dest: /etc/openvpn/server.key
-    owner: root
-    group: root
-    mode: 0400
-
-- name: Copy tls-auth.key to /etc/openvpn/
-  copy:
-    src: tls-auth.key
-    dest: /etc/openvpn/tls-auth.key
-    owner: root
-    group: root
-    mode: 0400
-
-- sysctl:
-    name: net.ipv4.ip_forward
-    value: 1
-    state: present
-
-- name: Disable ufw
-  systemd:
-    state: stopped
-    name: ufw
-
-- name: Disable apparmor
-  systemd:
-    state: stopped
-    name: apparmor
+#- name: Install openvpn package
+#  apt:
+#    name: openvpn
+#    update_cache: yes
+#
+#- name: Copy ca.crt to /etc/openvpn/
+#  copy:
+#    src: ca.crt
+#    dest: /etc/openvpn/ca.crt
+#    owner: root
+#    group: root
+#    mode: 0644
+#
+#- name: Copy ca.key to /etc/openvpn/
+#  copy:
+#    src: ca.key
+#    dest: /etc/openvpn/ca.key
+#    owner: root
+#    group: root
+#    mode: 0400
+#
+#- name: Copy dh2048.pem to /etc/openvpn/
+#  copy:
+#    src: dh2048.pem
+#    dest: /etc/openvpn/dh2048.pem
+#    owner: root
+#    group: root
+#    mode: 0400
+#
+#- name: Copy server.crt to /etc/openvpn/
+#  copy:
+#    src: server.crt
+#    dest: /etc/openvpn/server.crt
+#    owner: root
+#    group: root
+#    mode: 0644
+#
+#- name: Copy server.key to /etc/openvpn/
+#  copy:
+#    src: server.key
+#    dest: /etc/openvpn/server.key
+#    owner: root
+#    group: root
+#    mode: 0400
+#
+#- name: Copy tls-auth.key to /etc/openvpn/
+#  copy:
+#    src: tls-auth.key
+#    dest: /etc/openvpn/tls-auth.key
+#    owner: root
+#    group: root
+#    mode: 0400
+#
+#- sysctl:
+#    name: net.ipv4.ip_forward
+#    value: 1
+#    state: present
+#
+#- name: Disable ufw
+#  systemd:
+#    state: stopped
+#    name: ufw
+#
+#- name: Disable apparmor
+#  systemd:
+#    state: stopped
+#    name: apparmor
 
 - template:
     src: server.conf.j2
-    dest: /etc/openvpn/server.conf
-  notify:
-    - Restart openvpn@server
+    dest: "/etc/openvpn/server{{ item.port }}.conf"
+  with_items:
+    - { port: '1194' }
+    - { port: '1195' }
 
-- iptables:
-    table: nat
-    chain: POSTROUTING
-    out_interface: "{{ ansible_default_ipv4.interface }}"
-    jump: MASQUERADE
-  notify:
-    - Restart openvpn@server
-
-- name: Ensure  openvpn@server started
-  systemd:
-    state: started
-    name: openvpn
+#  notify:
+#    - Restart openvpn@server
+#
+#- iptables:
+#    table: nat
+#    chain: POSTROUTING
+#    out_interface: "{{ ansible_default_ipv4.interface }}"
+#    jump: MASQUERADE
+#  notify:
+#    - Restart openvpn@server
+#
+#- name: Ensure  openvpn@server started
+#  systemd:
+#    state: started
+#    name: openvpn
